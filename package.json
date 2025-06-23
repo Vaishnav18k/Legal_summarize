@@ -12,9 +12,16 @@
     "@edgestore/react": "^0.5.2",
     "@edgestore/server": "^0.5.2",
     "@stackframe/stack": "^2.8.12",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "convex": "^1.24.8",
+    "lucide-react": "^0.522.0",
     "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-dropzone": "^14.3.8",
+    "react-uploader": "^3.43.0",
+    "tailwind-merge": "^3.3.1",
     "zod": "^3.25.67"
   },
   "devDependencies": {
@@ -23,6 +30,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
+    "tw-animate-css": "^1.3.4",
     "typescript": "^5"
   }
 }
