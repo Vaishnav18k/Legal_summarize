@@ -1,26 +1,45 @@
+// import { initEdgeStore } from '@edgestore/server';
+// import { createEdgeStoreNextHandler } from '@edgestore/server/adapters/next/app';
+
+// const es = initEdgeStore.create();
+
+// /**
+//  * This is the main router for the EdgeStore buckets.
+//  */
+// const edgeStoreRouter = es.router({
+//   publicFiles: es.fileBucket(),
+//   publicFiles: es.fileBucket()
+//     .beforeDelete(({ ctx, fileInfo }: { ctx: any; fileInfo: any }) => {
+//       return true;
+//     }),
+// });
+
+// const handler = createEdgeStoreNextHandler({
+//   router: edgeStoreRouter,
+// });
+
+// export { handler as GET, handler as POST };
+
+// /**
+//  * This type is used to create the type-safe client for the frontend.
+//  */
+// export type EdgeStoreRouter = typeof edgeStoreRouter;
+// app/api/edgestore/[...edgestore]/route.ts
 import { initEdgeStore } from '@edgestore/server';
 import { createEdgeStoreNextHandler } from '@edgestore/server/adapters/next/app';
 
 const es = initEdgeStore.create();
 
-/**
- * This is the main router for the EdgeStore buckets.
- */
 const edgeStoreRouter = es.router({
-  publicFiles: es.fileBucket(),
   publicFiles: es.fileBucket()
-    .beforeDelete(({ ctx, fileInfo }: { ctx: any; fileInfo: any }) => {
-      return true;
+    .beforeDelete(({ ctx, fileInfo }) => {
+      // Add Convex integration here to delete file metadata
+      return true; // allow delete
     }),
 });
 
-const handler = createEdgeStoreNextHandler({
+export default createEdgeStoreNextHandler({
   router: edgeStoreRouter,
 });
 
-export { handler as GET, handler as POST };
-
-/**
- * This type is used to create the type-safe client for the frontend.
- */
 export type EdgeStoreRouter = typeof edgeStoreRouter;
