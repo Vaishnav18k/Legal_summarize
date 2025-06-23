@@ -8,6 +8,10 @@ const es = initEdgeStore.create();
  */
 const edgeStoreRouter = es.router({
   publicFiles: es.fileBucket(),
+  publicFiles: es.fileBucket()
+    .beforeDelete(({ ctx, fileInfo }: { ctx: any; fileInfo: any }) => {
+      return true;
+    }),
 });
 
 const handler = createEdgeStoreNextHandler({
