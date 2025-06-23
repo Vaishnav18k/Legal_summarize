@@ -3,63 +3,142 @@ import { SignIn, UserButton } from "@stackframe/stack";
 import Image from "next/image";
 import * as React from "react";
 import { useEdgeStore } from "../lib/edgestore";
-import { useState } from "react";
-
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const [file, setFile] = React.useState<File>();
+  const [file, setFile] = React.useState<File | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<{
+    name: string;
+    size: string;
+    url: string;
+  } | null>(null);
   const { edgestore } = useEdgeStore();
   const [progress, setProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const [abortController, setAbortController] = useState<AbortController>();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [selectedSummaryStyle, setSelectedSummaryStyle] = useState<{
-    
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  const [selectedSummaryStyle, setSelectedSummaryStyle] = useState<{
     name: string;
     description: string;
     title: string;
     content: string;
-
   } | null>(null);
 
   const summaryStyles = [
     {
       name: "Concise",
       description: "Brief overview with key points",
-      title:"Concise Summary",
-      content:"Provides a brief overview highlighting the most important aspects of the judgment, including the final decision and key legal principles."
-
+      title: "Concise Summary",
+      content:
+        "Provides a brief overview highlighting the most important aspects of the judgment, including the final decision and key legal principles.",
     },
     {
       name: "Detailed",
       description: "Comprehensive analysis with context",
-      title:"Detailed Analysis",
-      content:"Offers a comprehensive analysis including background, legal issues, court reasoning, precedents cited, and implications of the decision."
+      title: "Detailed Analysis",
+      content:
+        "Offers a comprehensive analysis including background, legal issues, court reasoning, precedents cited, and implications of the decision.",
     },
     {
       name: "Key Arguments",
       description: "Focus on legal arguments and reasoning",
-      title:"Key Arguments Focus",
-      content:"Focuses specifically on the legal arguments presented by both parties, the court's reasoning, and the legal precedents that influenced the decision."
-    }
+      title: "Key Arguments Focus",
+      content:
+        "Focuses specifically on the legal arguments presented by both parties, the court's reasoning, and the legal precedents that influenced the decision.",
+    },
   ];
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const selectStyle = (style: { name: string; description: string ; title : string ; content: string }) => {
+  const selectStyle = (style: {
+    name: string;
+    description: string;
+    title: string;
+    content: string;
+  }) => {
     setSelectedSummaryStyle(style);
     setIsDropdownOpen(false);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+      uploadFile(selectedFile);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (e.dataTransfer.files?.[0]) {
+      const selectedFile = e.dataTransfer.files[0];
+      setFile(selectedFile);
+      uploadFile(selectedFile);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  const handleClickUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const uploadFile = async (fileToUpload: File) => {
+    setIsUploading(true);
+    setProgress(0);
+    const controller = new AbortController();
+    setAbortController(controller);
+
+    try {
+      const res = await edgestore.publicFiles.upload({
+        file: fileToUpload,
+        onProgressChange: (progress) => {
+          setProgress(progress);
+        },
+        signal: controller.signal,
+      });
+
+      setUploadedFile({
+        name: fileToUpload.name,
+        size: (fileToUpload.size / (1024 * 1024)).toFixed(2) + " MB",
+        url: res.url,
+      });
+    } catch (error) {
+      console.error("Upload failed:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleGenerateSummary = async () => {
+    if (!uploadedFile || !selectedSummaryStyle) return;
+
+    // Store data for the next page
+    localStorage.setItem(
+      "summaryData",
+      JSON.stringify({
+        fileUrl: uploadedFile.url,
+        fileName: uploadedFile.name,
+        summaryStyle: selectedSummaryStyle,
+      })
+    );
+
+    // Redirect to summary page
+    router.push("/summary");
   };
 
   return (
     <>
       <div className="rounded-lg border bg-card text-card-foreground shadow-sm bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 ">
-          {/* <div className="border border-white p-6 rounded-md bg-teal-700"> */}
-          {/* <SignIn/> */}
-
-          {/* </div> */}
           <div className="container mx-auto px-4 py-8 bg-blue-50">
             <div className="text-center mb-12">
               <div className="flex items-center justify-center gap-3 mb-4">
@@ -87,12 +166,12 @@ export default function Home() {
                   LegalSummarize
                 </h1>
               </div>
-              {/* paragraph text-slate */}
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
                 AI-powered legal judgment summarization for legal professionals.
-</p>                <p className="text-xl text-gray-600 max-w-2xl mx-auto">Upload, analyze, and interact with legal documents efficiently.
               </p>
-              {/* paragraph text-slate end */}
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                Upload, analyze, and interact with legal documents efficiently.
+              </p>
             </div>
             <div className="max-w-4xl mx-auto mb-12"></div>
 
@@ -131,7 +210,6 @@ export default function Home() {
                         <line x1="12" x2="12" y1="3" y2="15"></line>
                       </svg>
                       Upload Judgment
-                    
                     </h3>
                     <p className="text-sm text-slate-500">
                       Upload legal judgment files in PDF, DOC, or TXT format
@@ -143,11 +221,16 @@ export default function Home() {
                         role="presentation"
                         tabIndex={0}
                         className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors border-gray-300 hover:border-gray-400"
+                        onClick={handleClickUpload}
+                        onDrop={handleDrop}
+                        onDragOver={handleDragOver}
                       >
                         <input
+                          ref={fileInputRef}
                           accept="application/pdf,.pdf,application/msword,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx,text/plain,.txt"
                           tabIndex={-1}
                           type="file"
+                          onChange={handleFileChange}
                           style={{
                             border: 0,
                             clip: "rect(0px, 0px, 0px, 0px)",
@@ -163,26 +246,32 @@ export default function Home() {
                         />
                         <div className="space-y-4">
                           <div className="mx-auto w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="lucide lucide-upload h-6 w-6 text-gray-600"
-                            >
-                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                              <polyline points="17 8 12 3 7 8"></polyline>
-                              <line x1="12" x2="12" y1="3" y2="15"></line>
-                            </svg>
+                            {isUploading ? (
+                              <div className="w-8 h-8 border-t-2 border-blue-600 rounded-full animate-spin"></div>
+                            ) : (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="lucide lucide-upload h-6 w-6 text-gray-600"
+                              >
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" x2="12" y1="3" y2="15"></line>
+                              </svg>
+                            )}
                           </div>
                           <div>
                             <p className="text-lg font-medium text-gray-900">
-                              Upload judgment file
+                              {isUploading
+                                ? "Uploading..."
+                                : "Upload judgment file"}
                             </p>
                             <p className="text-sm text-gray-500 mt-1">
                               Drag and drop or click to browse
@@ -193,13 +282,52 @@ export default function Home() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Upload progress bar */}
+                      {isUploading && (
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-blue-600 h-2 rounded-full"
+                            style={{ width: `${progress}%` }}
+                          ></div>
+                        </div>
+                      )}
+
+                      {/* Uploaded file preview */}
+                      {uploadedFile && !isUploading && (
+                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md text-green-800">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <div className="font-medium">
+                                {uploadedFile.name}
+                              </div>
+                              <div className="text-xs">{uploadedFile.size}</div>
+                            </div>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="lucide lucide-check-circle h-5 w-5 text-green-600"
+                            >
+                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
 
                 {/* Summarization Style Card */}
-                {/* <div
-                  className="rounded-lg border bg-card text-card-white shadow-sm"
+                <div
+                  className="rounded-lg border border-slate-300 bg-white text-card-white shadow-sm"
                   data-v0-t="card"
                 >
                   <div className="flex flex-col space-y-1.5 p-6">
@@ -224,115 +352,82 @@ export default function Home() {
                       </svg>
                       Summarization Style
                     </h3>
-                    <p className="text-sm  text-slate-500">
+                    <p className="text-sm text-slate-500">
                       Choose the type of summary that best fits your needs
                     </p>
                   </div>
                   <div className="p-6 pt-0 space-y-4">
-                    <button
-                      type="button"
-                      role="combobox"
-                      aria-controls="radix-r1"
-                      aria-expanded="false"
-                      aria-autocomplete="none"
-                      dir="ltr"
-                      data-state="closed"
-                      data-placeholder=""
-                      className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-black focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
-                    >
-                      <span style={{ pointerEvents: "auto" }}>
-                        Select summarization style
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="lucide lucide-chevron-down h-4 w-4 opacity-50"
-                        aria-hidden="true"
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={toggleDropdown}
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-slate-400 border-solid border-input bg-background px-3 py-2 text-sm ring-offset-gray-400 placeholder:text-black focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
                       >
-                        <path d="m6 9 6 6 6-6"></path>
-                      </svg>
-                    </button>
+                        <span className="text-black">
+                          {selectedSummaryStyle
+                            ? selectedSummaryStyle.name
+                            : "Select summarization style"}
+                        </span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="gray"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-chevron-down-icon h-4 w-4 lucide-chevron-down"
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </button>
+                      {isDropdownOpen && (
+                        <div className="absolute z-40 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
+                          <ul className="py-1">
+                            {summaryStyles.map((style) => (
+                              <li
+                                key={style.name}
+                                onClick={() => selectStyle(style)}
+                                className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                              >
+                                <div className="font-medium text-black text-sm">
+                                  {style.name}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {style.description}
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                    {selectedSummaryStyle && (
+                      <div className="border border-blue-500 rounded-md p-4 bg-blue-50">
+                        <p className="text-blue-800 font-bold">
+                          {selectedSummaryStyle.title}{" "}
+                        </p>
+                        <p className="text-blue-800">
+                          {selectedSummaryStyle.content}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                </div> */}
-         <div className="rounded-lg border border-slate-300 bg-white text-card-white shadow-sm" data-v0-t="card">
-  <div className="flex flex-col space-y-1.5 p-6">
-    <h3 className="text-2xl text-black font-semibold leading-none tracking-tight flex items-center gap-2">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="lucide lucide-gavel h-5 w-5"
-      >
-        <path d="m14.5 12.5-8 8a2.119 2.119 0 1 1-3-3l8-8"></path>
-        <path d="m16 16 6-6"></path>
-        <path d="m8 8 6-6"></path>
-        <path d="m9 7 8 8"></path>
-        <path d="m21 11-8-8"></path>
-      </svg>
-      Summarization Style
-    </h3>
-    <p className="text-sm text-slate-500">
-      Choose the type of summary that best fits your needs
-    </p>
-  </div>
-  <div className="p-6 pt-0 space-y-4">
-    <div className="relative">
-      <button
-        type="button"
-        onClick={toggleDropdown}
-        className="flex h-10 w-full items-center justify-between rounded-md border border-slate-400 border-solid border-input bg-background px-3 py-2 text-sm ring-offset-gray-400 placeholder:text-black focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
-      >
-        <span className="text-black">
-          {selectedSummaryStyle ? selectedSummaryStyle.name : "Select summarization style"}
-        </span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="gray" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down-icon h-4 w-4 lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
-      </button>
-      {isDropdownOpen && (
-        <div className="absolute z-40 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
-          <ul className="py-1">
-            {summaryStyles.map((style) => (
-              <li 
-                key={style.name}
-                onClick={() => selectStyle(style)}
-                className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-              >
-                <div className="font-medium text-black text-sm">{style.name}</div>
-                <div className="text-xs text-gray-500">{style.description}</div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-   {selectedSummaryStyle && (
-      <div className="border border-blue-500 rounded-md p-4 bg-blue-50"> 
-      <p className="text-blue-800 font-bold" >{selectedSummaryStyle.title} </p>
-        <p className="text-blue-800">{selectedSummaryStyle.content}</p>
-      </div>
-    )}
-  </div>
-</div>
-
+                </div>
               </div>
 
               {/* Generate Summary Button */}
               <div className="text-center text-black">
                 <button
-                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-slate-900 text-white text-bold hover:bg-slate-500/90 h-11 rounded-md px-8 py-3 text-lg"
-                  disabled
+                  className={`inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-11 rounded-md px-8 py-3 text-lg ${
+                    uploadedFile && selectedSummaryStyle
+                      ? "bg-slate-900 text-white hover:bg-slate-700"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+                  disabled={!uploadedFile || !selectedSummaryStyle}
+                  onClick={handleGenerateSummary}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
