@@ -1,45 +1,4 @@
-// // convex/workspaces.ts
-// import { mutation, query } from "./_generated/server";
-// import { v } from "convex/values";
 
-// export const createWorkspace = mutation({
-//   args: {
-//     name: v.string(),
-//     email: v.optional(v.string()),
-//   },
-//   handler: async (ctx, args) => {
-//     return await ctx.db.insert("workspaces", {
-//       name: args.name,
-//       email: args.email,
-//       edgeStorageUrls: [],
-//       createdAt: Date.now(),
-//     });
-//   },
-// });
-
-// export const addFileToWorkspace = mutation({
-//   args: {
-//     workspaceId: v.id("workspaces"),
-//     fileUrl: v.string(),
-//   },
-//   handler: async (ctx, args) => {
-//     const workspace = await ctx.db.get(args.workspaceId);
-//     if (!workspace) throw new Error("Workspace not found");
-    
-//     const updatedUrls = [...workspace.edgeStorageUrls, args.fileUrl];
-//     await ctx.db.patch(args.workspaceId, { edgeStorageUrls: updatedUrls });
-//   },
-// });
-
-// export const getWorkspaceFiles = query({
-//   args: { workspaceId: v.id("workspaces") },
-//   handler: async (ctx, args) => {
-//     return await ctx.db
-//       .query("edgeStorageFiles")
-//       .withIndex("by_workspace", q => q.eq("workspaceId", args.workspaceId))
-//       .collect();
-//   },
-// });
 import { mutation , query} from "./_generated/server";
 import { v } from "convex/values";
 

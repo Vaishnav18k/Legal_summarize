@@ -339,9 +339,80 @@ export default function Home() {
               </button>
             </div>
 
+            
             <div className="mt-16 grid md:grid-cols-3 gap-6">
-              {/* Feature cards remain the same */}
-            </div>
+  {/* Multi-Format Support */}
+  <div className="text-center p-6">
+    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="lucide lucide-upload h-6 w-6 text-blue-600"
+      >
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" x2="12" y1="3" y2="15"></line>
+      </svg>
+    </div>
+    <h3 className="font-semibold mb-2">Multi-Format Support</h3>
+    <p className="text-sm text-gray-600">Upload PDF, DOC, DOCX, and TXT files with automatic text extraction</p>
+  </div>
+
+  {/* GPT-Powered Analysis */}
+  <div className="text-center p-6">
+    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="lucide lucide-gavel h-6 w-6 text-green-600"
+      >
+        <path d="m14.5 12.5-8 8a2.119 2.119 0 1 1-3-3l8-8"></path>
+        <path d="m16 16 6-6"></path>
+        <path d="m8 8 6-6"></path>
+        <path d="m9 7 8 8"></path>
+        <path d="m21 11-8-8"></path>
+      </svg>
+    </div>
+    <h3 className="font-semibold mb-2">GPT-Powered Analysis</h3>
+    <p className="text-sm text-gray-600">Advanced AI trained to understand legal terminology and concepts</p>
+  </div>
+
+  {/* Interactive Chat */}
+  <div className="text-center p-6">
+    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="lucide lucide-message-square h-6 w-6 text-purple-600"
+      >
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    </div>
+    <h3 className="font-semibold mb-2">Interactive Chat</h3>
+    <p className="text-sm text-gray-600">Chat with your summary, highlight key points, and add annotations</p>
+  </div>
+</div>
           </div>
         </div>
       </div>
