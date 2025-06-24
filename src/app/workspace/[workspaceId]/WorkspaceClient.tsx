@@ -2,6 +2,8 @@
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
+import { useRouter } from 'next/router';
+
 
 export default function WorkspaceClient({ params }: { params: { workspaceId: string } }) {
   const workspace = useQuery(api.workspaces.getWorkspace, {
@@ -11,6 +13,7 @@ export default function WorkspaceClient({ params }: { params: { workspaceId: str
   if (workspace === undefined) return <div className="p-8">Loading workspace...</div>;
   if (workspace === null) return <div className="p-8">Workspace not found</div>;
 
+   
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">Workspace: {workspace.name}</h1>
