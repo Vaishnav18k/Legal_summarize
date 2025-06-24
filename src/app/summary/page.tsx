@@ -1,39 +1,5 @@
-// // app/summary/page.tsx
-// "use client";
-// import { useEffect, useState } from "react";
 
-// export default function SummaryPage() {
-//   const [summaryData, setSummaryData] = useState<any>(null);
 
-//   useEffect(() => {
-//     const data = localStorage.getItem("summaryData");
-//     if (data) {
-//       setSummaryData(JSON.parse(data));
-//       // Clear localStorage after retrieval
-//       localStorage.removeItem("summaryData");
-//     } else {
-//       // Redirect back if no data
-//     //   window.location.href = "/";
-//     }
-//   }, []);
-
-//   if (!summaryData) {
-//     return <div>Loading...</div>;
-//   }
-
-//   return (
-//     <div className="p-8">
-//       <h1 className="text-2xl font-bold mb-4">Generated Summary</h1>
-//       <p>
-//         <strong>File:</strong> {summaryData.fileName}
-//       </p>
-//       <p>
-//         <strong>Summary Style:</strong> {summaryData.summaryStyle.name}
-//       </p>
-//       {/* Add your summary display logic here */}
-//     </div>
-//   );
-// }
 'use client';   
 import React, { useState } from 'react';
 import { ArrowLeft, Eye, EyeOff, MessageSquare, FileText, Sparkles, Send } from 'lucide-react';
@@ -62,7 +28,7 @@ const LegalAIChat: React.FC = () => {
               {/* <p className="text-sm text-gray-500">ABC Corporation Ltd. v. XYZ Industries Pvt. Ltd.</p> */}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <button
               onClick={toggleSummary}
               className="flex items-center gap-2 justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3"
@@ -70,7 +36,7 @@ const LegalAIChat: React.FC = () => {
               {showSummary ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               {showSummary ? 'Hide Summary' : 'Show Summary'}
             </button>
-          </div>
+          </div> */}
         </div>
         {/* <div className="flex gap-2 mt-4">
           <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 rounded-md px-3 text-xs">
@@ -89,13 +55,23 @@ const LegalAIChat: React.FC = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Chat Section */}
         <div className={`bg-white flex flex-col ${showSummary ? 'w-1/2' : 'w-full'} border-r border-gray-200 transition-all duration-300`}>
-          <div className="p-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-blue-600" />
-              Legal AI Assistant 
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">Ask questions about the legal judgment</p>
-          </div>
+         <div className="p-4 border-b border-gray-200 bg-gray-50">
+  <div className="flex items-center justify-between">
+    <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+      <MessageSquare className="h-5 w-5 text-blue-600" /> 
+      Legal AI Assistant 
+    </h2>
+    <button
+      onClick={toggleSummary}
+      className="flex items-center gap-2 justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3"
+    >
+      {showSummary ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      {showSummary ? 'Hide Summary' : 'Show Summary'}
+    </button>
+  </div>
+  <p className="text-sm text-gray-600 mt-1">Ask questions about the legal judgment</p>
+</div>
+           
           <div className="flex-1 overflow-y-auto p-4">
             <div className="space-y-4">
               <div className="flex gap-3 justify-start">
